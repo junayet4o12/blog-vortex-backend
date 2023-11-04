@@ -23,29 +23,29 @@ const client = new MongoClient(uri, {
     }
 });
 
-const verifyClient = async(req, res, next) => {
-    const token = req.cookies?.token;
-    console.log('client token', token);
-    if(!token){
-        return res.status(401).send({message: 'Unauthorised'})
-    }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=> {
-        if(err){
-            return res.status(401).send({message: 'Unauthorised'})
-        }
-        req.user = decoded
-        next()
-    })
+// const verifyClient = async(req, res, next) => {
+//     const token = req.cookies?.token;
+//     console.log('client token', token);
+//     if(!token){
+//         return res.status(401).send({message: 'Unauthorised'})
+//     }
+//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=> {
+//         if(err){
+//             return res.status(401).send({message: 'Unauthorised'})
+//         }
+//         req.user = decoded
+//         next()
+//     })
     
-}
+// }
 
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
 
-        const database = client.db("BlogBackend");
-        // const servicesCollection = database.collection("services");
+        const database = client.db("BlogsBackend");
+        const blogsCollection = database.collection("AllBlogs");
         // auth api
         // app.post('/jwt', async (req, res) => {
         //     const user = req.body;
@@ -69,7 +69,13 @@ async function run() {
 
         
 
-       
+       app.get('/api/v1/latestblogs', async(req, res)=> {
+        const result = await blogsCollection.find() .sort({ 
+            post_date
+            : -1 }).limit(6).toArray();
+        
+        res.send(result)
+       })
 
 
 
