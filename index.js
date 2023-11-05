@@ -45,7 +45,8 @@ async function run() {
         // await client.connect();
 
         const database = client.db("BlogsBackend");
-        const blogsCollection = database.collection("AllBlogs");
+        const blogsCollection = database.collection("AllBLogs");
+        const subscribersCollection = database.collection("AllSubscribe");
         // auth api
         // app.post('/jwt', async (req, res) => {
         //     const user = req.body;
@@ -74,6 +75,21 @@ async function run() {
             post_date
             : -1 }).limit(6).toArray();
         
+        res.send(result)
+       })
+       app.get('/api/v1/allblogs', async(req, res)=> {
+        const result = await blogsCollection.find().toArray();
+        
+        res.send(result)
+       })
+
+       app.get('/api/v1/subscribers', async(req, res)=> {
+        const result = await subscribersCollection.find().toArray()
+        res.send(result)
+       })
+       app.post('/api/v1/subscribers', async(req, res)=> {
+        const subscriber = req.body;
+        const result = await subscribersCollection.insertOne(subscriber);
         res.send(result)
        })
 
