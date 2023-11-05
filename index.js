@@ -36,7 +36,7 @@ const client = new MongoClient(uri, {
 //         req.user = decoded
 //         next()
 //     })
-    
+
 // }
 
 async function run() {
@@ -47,6 +47,7 @@ async function run() {
         const database = client.db("BlogsBackend");
         const blogsCollection = database.collection("AllBLogs");
         const subscribersCollection = database.collection("AllSubscribe");
+        const commentsCollection = database.collection("AllComments");
         // auth api
         // app.post('/jwt', async (req, res) => {
         //     const user = req.body;
@@ -63,49 +64,79 @@ async function run() {
         //     .send({ message: 'success' })
         // })
         // app.post('/logout', async(req, res)=> {
-            
+
         //     res.clearCookie('token', {maxAge: 0}).send({success: true})
         // })
 
 
-        
 
-       app.get('/api/v1/latestblogs', async(req, res)=> {
-        const result = await blogsCollection.find() .sort({ 
-            post_date
-            : -1 }).limit(6).toArray();
-        
-        res.send(result)
-       })
-       app.get('/api/v1/allblogs', async(req, res)=> {
-        const result = await blogsCollection.find().toArray();
-        
-        res.send(result)
-       })
+        // blogs 
+        app.get('/api/v1/latestblogs', async (req, res) => {
+            const result = await blogsCollection.find().sort({
+                post_date
+                    : -1
+            }).limit(6).toArray();
 
-       app.get('/api/v1/subscribers', async(req, res)=> {
-        const result = await subscribersCollection.find().toArray()
-        res.send(result)
-       })
-       app.post('/api/v1/subscribers', async(req, res)=> {
-        const subscriber = req.body;
-        const result = await subscribersCollection.insertOne(subscriber);
-        res.send(result)
-       })
+            res.send(result)
+        })
+        app.get('/api/v1/allblogs', async (req, res) => {
+            const result = await blogsCollection.find().toArray();
+
+            res.send(result)
+        })
+        app.get('/api/v1/signleblog', async (req, res) => {
+            // const result = await blogsCollection.find().toArray();
+            const id = req.query.id;
+            const cursor = { _id: new ObjectId(id) }
+            console.log(cursor);
+            const result = await blogsCollection.findOne(cursor)
+            res.send(result)
+
+        })
+
+        app.get('/api/v1/subscribers', async (req, res) => {
+            const result = await subscribersCollection.find().toArray()
+            res.send(result)
+        })
+        app.post('/api/v1/subscribers', async (req, res) => {
+            const subscriber = req.body;
+            const result = await subscribersCollection.insertOne(subscriber);
+            res.send(result)
+        })
+
+        //    comments 
+        app.get('/api/v1/comments', async (req, res) => {
+            const result = await commentsCollection.find().toArray();
+            res.send(result)
+        })
+        app.get('/api/v1/singeblogcomments', async (req, res) => {
+            const id = req.query.id;
+            const cursor = {blogId: (id)}
+            console.log(cursor);
+            console.log(id);
+            const result = await commentsCollection.find(cursor).toArray();
+            res.send(result)
+        })
+
+        app.post('/api/v1/comments', async(req, res)=> {
+            const comment = req.body;
+            const result = await commentsCollection.insertOne(comment);
+            res.send(result)
+        })
 
 
 
         // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
-       
+
     }
 }
 run().catch(console.dir);
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+    res.send('Hello World!')
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+    console.log(`Example app listening on port ${port}`)
 })
