@@ -84,9 +84,15 @@ async function run() {
 
             res.send(result)
         })
-        app.get('/api/v1/signleblog', async (req, res) => {
+        app.post('/api/v1/allblogs', async (req, res) => {
+            const blog = req.body
+            const result = await blogsCollection.insertOne(blog);
+
+            res.send(result)
+        })
+        app.get('/api/v1/signleblog/:id', async (req, res) => {
             // const result = await blogsCollection.find().toArray();
-            const id = req.query.id;
+            const id = req.params.id;
             const cursor = { _id: new ObjectId(id) }
             console.log(cursor);
             const result = await blogsCollection.findOne(cursor)
