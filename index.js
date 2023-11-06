@@ -79,6 +79,16 @@ async function run() {
 
             res.send(result)
         })
+        app.get('/api/v1/featuresblogs', async (req, res) => {
+            const blogs = await blogsCollection.find().toArray();
+            const sortedBlogs = blogs.sort((a, b) => b.long_description.length - a.long_description.length);
+        
+            const result = sortedBlogs.slice(0, 10);
+        
+            
+
+            res.send(result)
+        })
         app.get('/api/v1/allblogs', async (req, res) => {
             const result = await blogsCollection.find().toArray();
 
@@ -99,6 +109,29 @@ async function run() {
             res.send(result)
 
         })
+        app.put('/api/v1/signleblog/:id', async (req, res) => {
+            const blog = req.body;
+
+            const id = req.params.id;
+            const cursor = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const updatedBlog = {
+                $set: {
+                    title: blog.title,
+                    short_description: blog.short_description,
+                    long_description: blog.long_description,
+                    category: blog.category,
+                    img: blog.img,
+                    posterImg: blog.posterImg,
+                    posterName: blog.posterName,
+                    email: blog.email,
+                    post_date: blog.post_date
+                }
+
+            }
+            const result = await blogsCollection.updateOne(cursor, updatedBlog, options)
+            res.send(result)
+        })
 
         app.get('/api/v1/subscribers', async (req, res) => {
             const result = await subscribersCollection.find().toArray()
@@ -117,14 +150,14 @@ async function run() {
         })
         app.get('/api/v1/singeblogcomments', async (req, res) => {
             const id = req.query.id;
-            const cursor = {blogId: (id)}
+            const cursor = { blogId: (id) }
             console.log(cursor);
             console.log(id);
             const result = await commentsCollection.find(cursor).toArray();
             res.send(result)
         })
 
-        app.post('/api/v1/comments', async(req, res)=> {
+        app.post('/api/v1/comments', async (req, res) => {
             const comment = req.body;
             const result = await commentsCollection.insertOne(comment);
             res.send(result)
