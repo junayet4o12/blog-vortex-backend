@@ -142,7 +142,7 @@ async function run() {
         })
 
         // singleblog
-        app.get('/api/v1/signleblog/:id',verifyClient, async (req, res) => {
+        app.get('/api/v1/signleblog/:id', async (req, res) => {
             // const result = await blogsCollection.find().toArray();
             const id = req.params.id;
             const cursor = { _id: new ObjectId(id) }
