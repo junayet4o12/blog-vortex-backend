@@ -7,7 +7,10 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors())
+app.use(cors({
+    origin: ['http://localhost:5173'],
+    credentials: true
+}))
 app.use(express.json())
 app.use(cookieParser())
 
@@ -50,20 +53,20 @@ async function run() {
         const commentsCollection = database.collection("AllComments");
         const wishlistsCollection = database.collection("AllWishlists");
         // auth api
-        // app.post('/jwt', async (req, res) => {
-        //     const user = req.body;
-        //     console.log(user);
-        //     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        //         expiresIn: '1h'
-        //     })
-        //     console.log(token);
-        //     res
-        //     .cookie('token', token, {
-        //         httpOnly: true,
-        //         secure: false
-        //     })
-        //     .send({ message: 'success' })
-        // })
+        app.post('/api/v1/jwt', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '1h'
+            })
+            console.log(token);
+             res
+            .cookie('token', token, {
+                httpOnly: true,
+                secure: false
+            })
+            .send({ message: 'success' })
+        })
         // app.post('/logout', async(req, res)=> {
 
         //     res.clearCookie('token', {maxAge: 0}).send({success: true})
@@ -113,6 +116,29 @@ async function run() {
             const result = await wishlistsCollection.find().toArray()
 
             res.send(result)
+        })
+        app.get('/api/v1/wishlistBlog/:id', async (req, res) => {
+            const id  = req.params.id;
+            console.log(id);
+            const cursor = {_id: new ObjectId(id)}
+            const result = await wishlistsCollection.findOne(cursor)
+
+            res.send(result)
+        })
+        app.delete('/api/v1/wishlistBlog/:id', async (req, res) => {
+            const id = req.params.id;
+            const cursor = {_id: new ObjectId(id)}
+            const result = await wishlistsCollection.deleteOne(cursor)
+
+            res.send(result)
+        })
+        app.get('/api/v1/singlewishlistBlog', async (req, res) => {
+            const email = req.query.email;
+            const cursor = {listerUser: (email)}
+            const result =  wishlistsCollection.find(cursor)
+            const gettingdata = await result.toArray()
+
+            res.send(gettingdata)
         })
 
         // singleblog
