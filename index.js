@@ -26,21 +26,21 @@ const client = new MongoClient(uri, {
     }
 });
 
-// const verifyClient = async(req, res, next) => {
-//     const token = req.cookies?.token;
-//     console.log('client token', token);
-//     if(!token){
-//         return res.status(401).send({message: 'Unauthorised'})
-//     }
-//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=> {
-//         if(err){
-//             return res.status(401).send({message: 'Unauthorised'})
-//         }
-//         req.user = decoded
-//         next()
-//     })
+const verifyClient = async (req, res, next) => {
+    const token = req.cookies?.token;
+    console.log('client token', token);
+    if (!token) {
+        return res.status(401).send({ message: 'Unauthorised' })
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'Unauthorised' })
+        }
+        req.user = decoded
+        next()
+    })
 
-// }
+}
 
 async function run() {
     try {
@@ -60,17 +60,17 @@ async function run() {
                 expiresIn: '1h'
             })
             console.log(token);
-             res
-            .cookie('token', token, {
-                httpOnly: true,
-                secure: false
-            })
-            .send({ message: 'success' })
+            res
+                .cookie('token', token, {
+                    httpOnly: true,
+                    secure: false
+                })
+                .send({ message: 'success' })
         })
-        // app.post('/logout', async(req, res)=> {
-
-        //     res.clearCookie('token', {maxAge: 0}).send({success: true})
-        // })
+        app.post('/api/v1/logout', async (req, res) => {
+            console.log('logged out', req.body);
+            res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+        })
 
 
 
@@ -97,7 +97,7 @@ async function run() {
 
             res.send(result)
         })
-        app.post('/api/v1/allblogs', async (req, res) => {
+        app.post('/api/v1/allblogs',verifyClient, async (req, res) => {
             const blog = req.body
             const result = await blogsCollection.insertOne(blog);
 
@@ -105,44 +105,44 @@ async function run() {
         })
 
         // wishlistsCollection
-        app.post('/api/v1/wishlistBlog', async (req, res) => {
+        app.post('/api/v1/wishlistBlog', verifyClient, async (req, res) => {
             const wishlist = req.body
             const result = await wishlistsCollection.insertOne(wishlist);
 
             res.send(result)
         })
         app.get('/api/v1/wishlistBlog', async (req, res) => {
-            
+
             const result = await wishlistsCollection.find().toArray()
 
             res.send(result)
         })
         app.get('/api/v1/wishlistBlog/:id', async (req, res) => {
-            const id  = req.params.id;
+            const id = req.params.id;
             console.log(id);
-            const cursor = {_id: new ObjectId(id)}
+            const cursor = { _id: new ObjectId(id) }
             const result = await wishlistsCollection.findOne(cursor)
 
             res.send(result)
         })
-        app.delete('/api/v1/wishlistBlog/:id', async (req, res) => {
+        app.delete('/api/v1/wishlistBlog/:id', verifyClient, async (req, res) => {
             const id = req.params.id;
-            const cursor = {_id: new ObjectId(id)}
+            const cursor = { _id: new ObjectId(id) }
             const result = await wishlistsCollection.deleteOne(cursor)
 
             res.send(result)
         })
-        app.get('/api/v1/singlewishlistBlog', async (req, res) => {
+        app.get('/api/v1/singlewishlistBlog', verifyClient, async (req, res) => {
             const email = req.query.email;
-            const cursor = {listerUser: (email)}
-            const result =  wishlistsCollection.find(cursor)
+            const cursor = { listerUser: (email) }
+            const result = wishlistsCollection.find(cursor)
             const gettingdata = await result.toArray()
 
             res.send(gettingdata)
         })
 
         // singleblog
-        app.get('/api/v1/signleblog/:id', async (req, res) => {
+        app.get('/api/v1/signleblog/:id',verifyClient, async (req, res) => {
             // const result = await blogsCollection.find().toArray();
             const id = req.params.id;
             const cursor = { _id: new ObjectId(id) }
@@ -151,7 +151,7 @@ async function run() {
             res.send(result)
 
         })
-        app.put('/api/v1/signleblog/:id', async (req, res) => {
+        app.put('/api/v1/signleblog/:id', verifyClient, async (req, res) => {
             const blog = req.body;
 
             const id = req.params.id;
@@ -199,7 +199,7 @@ async function run() {
             res.send(result)
         })
 
-        app.post('/api/v1/comments', async (req, res) => {
+        app.post('/api/v1/comments', verifyClient, async (req, res) => {
             const comment = req.body;
             const result = await commentsCollection.insertOne(comment);
             res.send(result)
