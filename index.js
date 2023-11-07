@@ -48,6 +48,7 @@ async function run() {
         const blogsCollection = database.collection("AllBLogs");
         const subscribersCollection = database.collection("AllSubscribe");
         const commentsCollection = database.collection("AllComments");
+        const wishlistsCollection = database.collection("AllWishlists");
         // auth api
         // app.post('/jwt', async (req, res) => {
         //     const user = req.body;
@@ -79,16 +80,15 @@ async function run() {
 
             res.send(result)
         })
+        // featuresblog
         app.get('/api/v1/featuresblogs', async (req, res) => {
             const blogs = await blogsCollection.find().toArray();
             const sortedBlogs = blogs.sort((a, b) => b.long_description.length - a.long_description.length);
-        
             const result = sortedBlogs.slice(0, 10);
-        
-            
-
             res.send(result)
         })
+
+        // blogsCollection
         app.get('/api/v1/allblogs', async (req, res) => {
             const result = await blogsCollection.find().toArray();
 
@@ -100,6 +100,22 @@ async function run() {
 
             res.send(result)
         })
+
+        // wishlistsCollection
+        app.post('/api/v1/wishlistBlog', async (req, res) => {
+            const wishlist = req.body
+            const result = await wishlistsCollection.insertOne(wishlist);
+
+            res.send(result)
+        })
+        app.get('/api/v1/wishlistBlog', async (req, res) => {
+            
+            const result = await wishlistsCollection.find().toArray()
+
+            res.send(result)
+        })
+
+        // singleblog
         app.get('/api/v1/signleblog/:id', async (req, res) => {
             // const result = await blogsCollection.find().toArray();
             const id = req.params.id;
@@ -132,7 +148,7 @@ async function run() {
             const result = await blogsCollection.updateOne(cursor, updatedBlog, options)
             res.send(result)
         })
-
+        // subscriber
         app.get('/api/v1/subscribers', async (req, res) => {
             const result = await subscribersCollection.find().toArray()
             res.send(result)
