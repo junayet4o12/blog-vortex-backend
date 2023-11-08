@@ -9,7 +9,7 @@ const port = process.env.PORT || 3000;
 
 app.use(cors({
     origin: [
-        
+
         'https://blog-16a2c.web.app',
         'https://blog-16a2c.firebaseapp.com'
     ],
@@ -56,6 +56,7 @@ async function run() {
         const subscribersCollection = database.collection("AllSubscribe");
         const commentsCollection = database.collection("AllComments");
         const wishlistsCollection = database.collection("AllWishlists");
+        const checkingclientCollections = database.collection("checkingclient");
         // auth api
         app.post('/api/v1/jwt', async (req, res) => {
             const user = req.body;
@@ -80,12 +81,15 @@ async function run() {
                 maxAge: 0,
                 // secure: true,
                 // sameSite: 'none'
-                 secure: process.env.NODE_ENV === "production" ? true : false,
+                secure: process.env.NODE_ENV === "production" ? true : false,
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
             }).send({ success: true })
         })
 
-
+        app.get('/api/v1/checkingclients',verifyClient, async (req, res) => {
+                 const result = await checkingclientCollections.find().toArray()
+                 res.send(result);
+        })
 
         // blogs 
         app.get('/api/v1/latestblogs', async (req, res) => {
@@ -145,8 +149,8 @@ async function run() {
 
             res.send(result)
         })
-        app.get('/api/v1/singlewishlistBlog',  async (req, res) => {
-           
+        app.get('/api/v1/singlewishlistBlog', verifyClient, async (req, res) => {
+
             const email = req?.query?.email;
             const cursor = { listerUser: (email) }
             const result = wishlistsCollection.find(cursor)
@@ -156,8 +160,8 @@ async function run() {
         })
 
         // singleblog
-        app.get('/api/v1/singleblog/:id', async (req, res) => {
-            
+        app.get('/api/v1/singleblog/:id', verifyClient, async (req, res) => {
+
             const id = req.params.id;
             const cursor = { _id: new ObjectId(id) }
             console.log(cursor);
@@ -218,9 +222,9 @@ async function run() {
         })
         app.get('/api/v1/singleblogcomments', async (req, res) => {
             const id = req.query.id;
-           
-             const   query = { blogId: (id) }
-            
+
+            const query = { blogId: (id) }
+
 
             console.log(query);
             console.log(id);
