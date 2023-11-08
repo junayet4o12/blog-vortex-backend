@@ -8,7 +8,11 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: [
+        
+        'https://blog-16a2c.web.app',
+        'https://blog-16a2c.firebaseapp.com'
+    ],
     credentials: true
 }))
 app.use(express.json())
@@ -63,13 +67,22 @@ async function run() {
             res
                 .cookie('token', token, {
                     httpOnly: true,
-                    secure: false
+                    // secure: true,
+                    // sameSite: 'none'
+                    secure: process.env.NODE_ENV === "production" ? true : false,
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
                 })
                 .send({ message: 'success' })
         })
         app.post('/api/v1/logout', async (req, res) => {
             console.log('logged out', req.body);
-            res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+            res.clearCookie('token', {
+                maxAge: 0,
+                // secure: true,
+                // sameSite: 'none'
+                 secure: process.env.NODE_ENV === "production" ? true : false,
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+            }).send({ success: true })
         })
 
 
@@ -97,7 +110,7 @@ async function run() {
 
             res.send(result)
         })
-        app.post('/api/v1/allblogs',verifyClient, async (req, res) => {
+        app.post('/api/v1/allblogs', verifyClient, async (req, res) => {
             const blog = req.body
             const result = await blogsCollection.insertOne(blog);
 
@@ -132,8 +145,9 @@ async function run() {
 
             res.send(result)
         })
-        app.get('/api/v1/singlewishlistBlog', verifyClient, async (req, res) => {
-            const email = req.query.email;
+        app.get('/api/v1/singlewishlistBlog',  async (req, res) => {
+           
+            const email = req?.query?.email;
             const cursor = { listerUser: (email) }
             const result = wishlistsCollection.find(cursor)
             const gettingdata = await result.toArray()
@@ -142,8 +156,8 @@ async function run() {
         })
 
         // singleblog
-        app.get('/api/v1/signleblog/:id', async (req, res) => {
-            // const result = await blogsCollection.find().toArray();
+        app.get('/api/v1/singleblog/:id', async (req, res) => {
+            
             const id = req.params.id;
             const cursor = { _id: new ObjectId(id) }
             console.log(cursor);
@@ -151,7 +165,19 @@ async function run() {
             res.send(result)
 
         })
-        app.put('/api/v1/signleblog/:id', verifyClient, async (req, res) => {
+        // app.get('/api/v1/singleblog/:id', async (req, res) => {
+        //     // console.log(req?.query, req?.user);
+        //     // if (req.query.email !== req.user.email) {
+        //     //     return res.status(403).send({ message: 'forbidden' })
+        //     // }
+        //     const id = req.params.id;
+        //     const cursor = { _id: new ObjectId(id) }
+        //     console.log(cursor);
+        //     const result = await blogsCollection.findOne(cursor)
+        //     res.send(result)
+
+        // })
+        app.put('/api/v1/singleblog/:id', verifyClient, async (req, res) => {
             const blog = req.body;
 
             const id = req.params.id;
@@ -190,12 +216,15 @@ async function run() {
             const result = await commentsCollection.find().toArray();
             res.send(result)
         })
-        app.get('/api/v1/singeblogcomments', async (req, res) => {
+        app.get('/api/v1/singleblogcomments', async (req, res) => {
             const id = req.query.id;
-            const cursor = { blogId: (id) }
-            console.log(cursor);
+           
+             const   query = { blogId: (id) }
+            
+
+            console.log(query);
             console.log(id);
-            const result = await commentsCollection.find(cursor).toArray();
+            const result = await commentsCollection.find(query).toArray();
             res.send(result)
         })
 
