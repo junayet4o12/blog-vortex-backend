@@ -114,10 +114,18 @@ async function run() {
 
             res.send(result)
         })
+        app.get('/api/v1/searchbycat', async (req, res)=> {
+            const searchingtext = req.query.category;
+            
+            const cursor = {category: (searchingtext)}
+            const result = await blogsCollection.find(cursor).toArray()
+            console.log(result.length);
+            res.send(result)
+        })
         app.post('/api/v1/allblogs', verifyClient, async (req, res) => {
             const blog = req.body
             const result = await blogsCollection.insertOne(blog);
-
+            
             res.send(result)
         })
 
