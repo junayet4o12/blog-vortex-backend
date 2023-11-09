@@ -169,11 +169,27 @@ async function run() {
 
         // singleblog
         app.get('/api/v1/singleblog/:id', verifyClient, async (req, res) => {
-
+             const email = req?.body;
+             console.log(email);
             const id = req.params.id;
             const cursor = { _id: new ObjectId(id) }
             console.log(cursor);
             const result = await blogsCollection.findOne(cursor)
+            res.send(result)
+
+        })
+        app.get(`/api/v1/singleblog2/:id`, verifyClient, async (req, res) => {
+             const email = req?.query.email;
+           
+             
+            const id = req.params.id;
+            const cursor = { _id: new ObjectId(id) }
+            console.log(cursor);
+            const result = await blogsCollection.findOne(cursor)
+            console.log(result.email);
+            if(email !== result?.email){
+                return res.status(403).send({message: 'forbidden'})
+             }
             res.send(result)
 
         })
